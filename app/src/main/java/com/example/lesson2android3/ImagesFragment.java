@@ -4,6 +4,8 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
 
 import android.os.Handler;
 import android.text.Editable;
@@ -14,6 +16,7 @@ import android.widget.Toast;
 import com.example.lesson2android3.databinding.FragmentImagesBinding;
 import com.example.lesson2android3.model.Hit;
 import com.example.lesson2android3.model.ImageResponse;
+import com.example.lesson2android3.viewmodel.PixaBayViewModel;
 
 import java.util.ArrayList;
 
@@ -23,36 +26,15 @@ import retrofit2.Response;
 
 
 public class ImagesFragment extends BaseFragment<FragmentImagesBinding> {
-
     ImageAdapter adapter;
+    PixaBayViewModel viewModel;
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        viewModel = ViewModelProviders.of(requireParentFragment()).get(PixaBayViewModel.class);
         initListener();
         initAdapter();
-    }
-
-    private void initAdapter() {
-        adapter = new ImageAdapter();
-    }
-
-    private void getRemoteData(String word) {
-        App.api.getImageBySearch("25007027-7418deb977c638792f4bfb99f", word).enqueue(new Callback<ImageResponse>() {
-            @Override
-            public void onResponse(Call<ImageResponse> call, Response<ImageResponse> response) {
-                if (response.isSuccessful()) {
-                    adapter.setData((ArrayList<Hit>) response.body().getHits());
-                    binding.recycler.setAdapter(adapter);
-                    binding.progressBar.setVisibility(View.GONE);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ImageResponse> call, Throwable t) {
-                Toast.makeText(requireContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     private void initListener() {
@@ -68,17 +50,23 @@ public class ImagesFragment extends BaseFragment<FragmentImagesBinding> {
             }
 
             @Override
-            public void afterTextChanged(Editable it) {
-                Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    public void run() {
-                        binding.progressBar.setVisibility(View.VISIBLE);
-                        getRemoteData(it.toString());
+            public void afterTextChanged(Editable editable) {
+                binding.progressBar.setVisibility(View.VISIBLE);
+                viewModel.getImages(binding.imageEd.getText().toString()).observe(getViewLifecycleOwner(), hits -> {
+                    if (hits != null) {
+                        binding.progressBar.setVisibility(View.GONE);
+                        binding.recycler.setAdapter(adapter);
+                        adapter.setData((ArrayList<Hit>) hits);
                     }
-                }, 2000);
+                });
             }
         });
     }
+
+    private void initAdapter() {
+        adapter = new ImageAdapter();
+    }
+
 
     @Override
     FragmentImagesBinding bind() {
