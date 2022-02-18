@@ -8,15 +8,23 @@ import com.example.lesson2android3.repository.PixaBayRepository;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.lifecycle.HiltViewModel;
+
+@HiltViewModel
 public class PixaBayViewModel extends ViewModel {
 
     public MutableLiveData<List<Hit>> hitMutableLiveData = new MutableLiveData<>();
+    PixaBayRepository repository;
 
-    PixaBayRepository repository = PixaBayRepository.getInstance();
-
+    @Inject
+    public PixaBayViewModel(PixaBayRepository repository) {
+        this.repository = repository;
+    }
 
     public MutableLiveData<List<Hit>> getImages(String word) {
-       hitMutableLiveData = repository.getImages(word);
-       return hitMutableLiveData;
+        hitMutableLiveData = repository.getImages(word);
+        return hitMutableLiveData;
     }
 }

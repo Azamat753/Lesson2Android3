@@ -20,11 +20,12 @@ import com.example.lesson2android3.viewmodel.PixaBayViewModel;
 
 import java.util.ArrayList;
 
+import dagger.hilt.android.AndroidEntryPoint;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-
+@AndroidEntryPoint
 public class ImagesFragment extends BaseFragment<FragmentImagesBinding> {
     ImageAdapter adapter;
     PixaBayViewModel viewModel;
@@ -32,7 +33,7 @@ public class ImagesFragment extends BaseFragment<FragmentImagesBinding> {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = ViewModelProviders.of(requireParentFragment()).get(PixaBayViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity()).get(PixaBayViewModel.class);
         initListener();
         initAdapter();
     }
